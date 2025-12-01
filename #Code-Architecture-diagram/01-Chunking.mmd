@@ -1,0 +1,60 @@
+graph TD
+    Start([📄 Raw Documents]) --> Load[🔧 Step 1: Load Documents<br/>LangChain Loaders]
+    
+    Load --> PDF[PDF - PyPDFLoader]
+    Load --> DOCX[DOCX - Docx2txtLoader]
+    Load --> Excel[Excel - UnstructuredExcelLoader]
+    Load --> CSV[CSV - CSVLoader]
+    
+    PDF --> Merge[Combined Text]
+    DOCX --> Merge
+    Excel --> Merge
+    CSV --> Merge
+    
+    Merge --> Split[✂️ Step 2: Sentence-Aware Splitting<br/>Using NLTK + Regex]
+    
+    Split --> Why1{Why Smart?}
+    Why1 --> Reason1[✓ Never breaks sentences]
+    Why1 --> Reason2[✓ Keeps meaning intact]
+    Why1 --> Reason3[✓ Uses natural boundaries]
+    
+    Reason1 --> Size[📏 Chunk Size: 512 characters<br/>Optimal for embeddings]
+    Reason2 --> Size
+    Reason3 --> Size
+    
+    Size --> Overlap[⟷ Step 3: Smart Overlap<br/>50 characters]
+    
+    Overlap --> How{How Overlap Works?}
+    How --> Ex1[Chunk 1: A B 📍C D📍]
+    How --> Ex2[Chunk 2: 📍C D📍 E F]
+    
+    Ex1 --> Benefit1
+    Ex2 --> Benefit1[No information loss<br/>between chunks]
+    
+    Benefit1 --> Final[✅ Step 4: Optimized Chunks]
+    
+    Final --> B1[✓ Better Accuracy]
+    Final --> B2[✓ No Context Loss]
+    Final --> B3[✓ Optimal Size]
+    Final --> B4[✓ Fast Processing]
+    
+    B1 --> Output[(💾 Ready for Database<br/>Storage & Embedding)]
+    B2 --> Output
+    B3 --> Output
+    B4 --> Output
+    
+    style Start fill:#e3f2fd
+    style Load fill:#c8e6c9
+    style Split fill:#fff9c4
+    style Overlap fill:#f8bbd0
+    style Final fill:#b39ddb
+    style Output fill:#80deea
+    
+    style Reason1 fill:#c5e1a5
+    style Reason2 fill:#c5e1a5
+    style Reason3 fill:#c5e1a5
+    
+    style B1 fill:#90caf9
+    style B2 fill:#90caf9
+    style B3 fill:#90caf9
+    style B4 fill:#90caf9

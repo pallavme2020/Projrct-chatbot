@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RAG Chatbot - Ask Questions</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 900px;
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .tab-btn {
+            padding: 12px 25px;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            font-size: 1em;
+            color: #666;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+
+        .tab-btn.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+
+        .tab-btn:hover {
+            color: #667eea;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .chat-section {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .chat-box {
+            border: 2px solid #f0f0f0;
+            border-radius: 10px;
+            height: 400px;
+            overflow-y: auto;
+            padding: 15px;
+            background: #fafafa;
+        }
+
+        .message {
+            margin-bottom: 15px;
+            padding: 12px 15px;
+            border-radius: 8px;
+            max-width: 80%;
+            word-wrap: break-word;
+        }
+
+        .message.user {
+            background: #667eea;
+            color: white;
+            margin-left: auto;
+            text-align: right;
+        }
+
+        .message.bot {
+            background: #e8e8e8;
+            color: #333;
+            margin-right: auto;
+        }
+
+        .message.system {
+            background: #fff3cd;
+            color: #856404;
+            margin: 10px 0;
+            text-align: center;
+            font-size: 0.9em;
+        }
+
+        .input-area {
+            display: flex;
+            gap: 10px;
+        }
+
+        .input-area input {
+            flex: 1;
+            padding: 12px 15px;
+            border: 2px solid #f0f0f0;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+
+        .input-area input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 600;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            padding: 10px 20px;
+            font-size: 0.9em;
+        }
+
+        .status-box {
+            background: #f0f7ff;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            font-size: 0.95em;
+        }
+
+        .status-item strong {
+            color: #333;
+        }
+
+        .status-item span {
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .upload-area {
+            border: 2px dashed #667eea;
+            border-radius: 10px;
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: #f8f9ff;
+        }
+
+        .upload-area:hover {
+            background: #f0f7ff;
+            border-color: #764ba2;
+        }
+
+        .upload-area input {
+            display: none;
+        }
+
+        .document-list {
+            margin-top: 20px;
+        }
+
+        .document-item {
+            background: #f8f9fa;
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .document-item .name {
+            color: #333;
+            font-weight: 500;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f0f0f0;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .mode-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .mode-selector label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            background: #f0f0f0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .mode-selector label:hover {
+            background: #e8e8e8;
+        }
+
+        .mode-selector input[type="radio"] {
+            cursor: pointer;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border-left: 4px solid #f5c6cb;
+        }
+
+        .success {
+            background: #d4edda;
+            color: #155724;
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border-left: 4px solid #c3e6cb;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.4);
+            animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 500px;
+            text-align: center;
+        }
+
+        .modal-content h2 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .modal-content .spinner {
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤖 RAG Chatbot</h1>
+            <p>Ask questions about your documents</p>
+        </div>
+
+        <div class="content">
+            <!-- Tabs -->
+            <div class="tabs">
+                <button class="tab-btn active" onclick="switchTab('chat')">💬 Chat</button>
+                <button class="tab-btn" onclick="switchTab('documents')">📄 Documents</button>
+                <button class="tab-btn" onclick="switchTab('settings')">⚙️ Settings</button>
+            </div>
+
+            <!-- Chat Tab -->
+            <div id="chat" class="tab-content active">
+                <div class="status-box" id="status">
+                    <div class="status-item">
+                        <strong>Status:</strong>
+                        <span id="statusText">Checking...</span>
+                    </div>
+                    <div class="status-item">
+                        <strong>Documents:</strong>
+                        <span id="docCount">-</span>
+                    </div>
+                    <div class="status-item">
+                        <strong>Model:</strong>
+                        <span id="modelName">-</span>
+                    </div>
+                </div>
+
+                <div class="mode-selector">
+                    <label>
+                        <input type="radio" name="mode" value="fast" /> Fast
+                    </label>
+                    <label>
+                        <input type="radio" name="mode" value="standard" checked /> Standard
+                    </label>
+                    <label>
+                        <input type="radio" name="mode" value="thorough" /> Thorough
+                    </label>
+                </div>
+
+                <div class="chat-box" id="chatBox"></div>
+
+                <div class="input-area">
+                    <input 
+                        type="text" 
+                        id="questionInput" 
+                        placeholder="Ask me anything about your documents..."
+                        onkeypress="handleKeyPress(event)"
+                    />
+                    <button class="btn" onclick="askQuestion()" id="askBtn">Send</button>
+                </div>
+            </div>
+
+            <!-- Documents Tab -->
+            <div id="documents" class="tab-content">
+                <h2 style="margin-bottom: 20px; color: #333;">Upload Documents</h2>
+                
+                <div class="upload-area" onclick="document.getElementById('fileInput').click()">
+                    <p style="font-size: 1.2em; margin-bottom: 10px;">📁 Click to upload or drag and drop</p>
+                    <p style="color: #999; font-size: 0.9em;">Supported: TXT, PDF, DOCX, XLSX, MD, HTML, CSV, JSON</p>
+                    <input type="file" id="fileInput" onchange="uploadFile()" />
+                </div>
+
+                <div id="uploadStatus"></div>
+
+                <h3 style="margin-top: 30px; margin-bottom: 15px; color: #333;">📚 Loaded Documents</h3>
+                <div class="document-list" id="documentList">
+                    <p style="color: #999;">Loading documents...</p>
+                </div>
+
+                <button class="btn" onclick="rebuildDatabase()" style="margin-top: 20px;">
+                    🔄 Rebuild Database
+                </button>
+            </div>
+
+            <!-- Settings Tab -->
+            <div id="settings" class="tab-content">
+                <h2 style="margin-bottom: 20px; color: #333;">Settings</h2>
+
+                <div class="status-box">
+                    <h3 style="margin-bottom: 15px; color: #333;">System Information</h3>
+                    <div class="status-item">
+                        <strong>Server Status:</strong>
+                        <span id="serverStatus">Checking...</span>
+                    </div>
+                    <div class="status-item">
+                        <strong>API Endpoint:</strong>
+                        <span id="apiEndpoint">http://localhost:5000</span>
+                    </div>
+                    <div class="status-item">
+                        <strong>Documents Loaded:</strong>
+                        <span id="totalDocs">-</span>
+                    </div>
+                    <div class="status-item">
+                        <strong>Total Chunks:</strong>
+                        <span id="totalChunks">-</span>
+                    </div>
+                </div>
+
+                <button class="btn btn-secondary" onclick="clearMemory()" style="margin-top: 20px;">
+                    🗑️ Clear Conversation Memory
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Modal -->
+    <div id="loadingModal" class="modal">
+        <div class="modal-content">
+            <h2>Processing...</h2>
+            <div class="spinner"></div>
+            <p id="loadingText">Please wait...</p>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:5000';
+
+        // Switch tabs
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+
+            if (tabName === 'documents') {
+                loadDocuments();
+            } else if (tabName === 'settings') {
+                checkStatus();
+            }
+        }
+
+        // Check system status
+        async function checkStatus() {
+            try {
+                const response = await fetch(`${API_URL}/status`);
+                const data = await response.json();
+                
+                document.getElementById('statusText').textContent = data.status;
+                document.getElementById('docCount').textContent = data.documents_loaded;
+                document.getElementById('modelName').textContent = data.model;
+                document.getElementById('serverStatus').textContent = '✅ Connected';
+                document.getElementById('totalDocs').textContent = data.documents_loaded;
+                document.getElementById('totalChunks').textContent = data.total_chunks;
+            } catch (error) {
+                console.error('Error checking status:', error);
+                document.getElementById('statusText').textContent = '❌ Disconnected';
+                document.getElementById('serverStatus').textContent = '❌ Error';
+            }
+        }
+
+        // Ask question
+        async function askQuestion() {
+            const question = document.getElementById('questionInput').value.trim();
+            if (!question) {
+                alert('Please enter a question');
+                return;
+            }
+
+            const mode = document.querySelector('input[name="mode"]:checked').value;
+            const chatBox = document.getElementById('chatBox');
+            const askBtn = document.getElementById('askBtn');
+
+            // Add user message
+            const userMsg = document.createElement('div');
+            userMsg.className = 'message user';
+            userMsg.textContent = question;
+            chatBox.appendChild(userMsg);
+
+            // Clear input
+            document.getElementById('questionInput').value = '';
+            askBtn.disabled = true;
+
+            // Add typing indicator
+            const typingMsg = document.createElement('div');
+            typingMsg.className = 'message bot';
+            typingMsg.innerHTML = '<div class="spinner" style="width: 15px; height: 15px; border-width: 2px;"></div>';
+            chatBox.appendChild(typingMsg);
+
+            try {
+                const response = await fetch(`${API_URL}/ask`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ question, mode })
+                });
+
+                const data = await response.json();
+                
+                // Remove typing indicator
+                typingMsg.remove();
+
+                // Add bot response
+                const botMsg = document.createElement('div');
+                botMsg.className = 'message bot';
+                botMsg.textContent = data.answer || data.error || 'No response';
+                chatBox.appendChild(botMsg);
+
+                // Scroll to bottom
+                chatBox.scrollTop = chatBox.scrollHeight;
+            } catch (error) {
+                typingMsg.remove();
+                const errorMsg = document.createElement('div');
+                errorMsg.className = 'message bot error';
+                errorMsg.textContent = 'Error: ' + error.message;
+                chatBox.appendChild(errorMsg);
+            } finally {
+                askBtn.disabled = false;
+            }
+        }
+
+        // Handle Enter key
+        function handleKeyPress(event) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                askQuestion();
+            }
+        }
+
+        // Upload file
+        async function uploadFile() {
+            const fileInput = document.getElementById('fileInput');
+            const file = fileInput.files[0];
+            if (!file) return;
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            showLoading('Uploading file...');
+
+            try {
+                const response = await fetch(`${API_URL}/upload`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+                hideLoading();
+
+                const uploadStatus = document.getElementById('uploadStatus');
+                if (response.ok) {
+                    uploadStatus.innerHTML = `<div class="success">✅ ${data.message}</div>`;
+                } else {
+                    uploadStatus.innerHTML = `<div class="error">❌ ${data.detail || data.error}</div>`;
+                }
+
+                fileInput.value = '';
+                setTimeout(loadDocuments, 1000);
+            } catch (error) {
+                hideLoading();
+                document.getElementById('uploadStatus').innerHTML = `<div class="error">❌ Error: ${error.message}</div>`;
+            }
+        }
+
+        // Load documents
+        async function loadDocuments() {
+            try {
+                const response = await fetch(`${API_URL}/documents`);
+                const data = await response.json();
+
+                const docList = document.getElementById('documentList');
+                if (data.documents.length === 0) {
+                    docList.innerHTML = '<p style="color: #999;">No documents uploaded yet</p>';
+                } else {
+                    docList.innerHTML = data.documents.map(doc => 
+                        `<div class="document-item"><span class="name">📄 ${doc}</span></div>`
+                    ).join('');
+                }
+            } catch (error) {
+                console.error('Error loading documents:', error);
+            }
+        }
+
+        // Rebuild database
+        async function rebuildDatabase() {
+            if (!confirm('Rebuild database? This may take a moment.')) return;
+
+            showLoading('Rebuilding database...');
+
+            try {
+                const response = await fetch(`${API_URL}/rebuild-database`, {
+                    method: 'POST'
+                });
+
+                const data = await response.json();
+                hideLoading();
+
+                alert('Database rebuilt successfully!');
+                loadDocuments();
+            } catch (error) {
+                hideLoading();
+                alert('Error rebuilding database: ' + error.message);
+            }
+        }
+
+        // Clear memory
+        async function clearMemory() {
+            if (!confirm('Clear conversation memory?')) return;
+
+            try {
+                await fetch(`${API_URL}/clear`, { method: 'POST' });
+                document.getElementById('chatBox').innerHTML = '';
+                alert('Memory cleared!');
+            } catch (error) {
+                alert('Error clearing memory: ' + error.message);
+            }
+        }
+
+        // Show/hide loading modal
+        function showLoading(text = 'Loading...') {
+            document.getElementById('loadingText').textContent = text;
+            document.getElementById('loadingModal').style.display = 'block';
+        }
+
+        function hideLoading() {
+            document.getElementById('loadingModal').style.display = 'none';
+        }
+
+        // Initialize on page load
+        window.addEventListener('load', () => {
+            checkStatus();
+            loadDocuments();
+        });
+    </script>
+</body>
+</html>

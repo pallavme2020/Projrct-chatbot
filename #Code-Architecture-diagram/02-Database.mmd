@@ -1,0 +1,82 @@
+graph TD
+    Start([📦 Optimized Chunks<br/>from Chunking Stage]) --> DB[🗄️ SQLite Database<br/>Lightweight & Fast]
+    
+    DB --> Table1[📋 Table 1: DOCS]
+    DB --> Table2[🧮 Table 2: EMBEDDINGS]
+    
+    Table1 --> F1[ID - Primary Key]
+    Table1 --> F2[Source - File Name]
+    Table1 --> F3[Chunk Text - Content]
+    Table1 --> F4[Chunk Index - Position]
+    Table1 --> F5[Metadata - Extra Info]
+    
+    F1 --> Index1[🔍 Index on Source<br/>Fast file filtering]
+    F2 --> Index1
+    
+    Table2 --> Multi[🎯 Multi-Vector Strategy<br/>3 Embeddings per Chunk]
+    
+    Multi --> Vec1[Vector 1: FULL TEXT<br/>Complete chunk embedding]
+    Multi --> Vec2[Vector 2: FIRST SENTENCE<br/>Main idea embedding]
+    Multi --> Vec3[Vector 3: KEYWORDS<br/>Key terms embedding]
+    
+    Vec1 --> Model[🤖 Embedding Model<br/>paraphrase-MiniLM-L3-v2]
+    Vec2 --> Model
+    Vec3 --> Model
+    
+    Model --> Why{Why 3 Vectors?}
+    Why --> R1[✓ Better Precision<br/>Match different query types]
+    Why --> R2[✓ Capture Main Ideas<br/>First sentence = topic]
+    Why --> R3[✓ Keyword Focus<br/>Technical term matching]
+    
+    R1 --> Store[💾 Storage Format]
+    R2 --> Store
+    R3 --> Store
+    
+    Store --> Format1[Doc ID - Links to DOCS table]
+    Store --> Format2[Embedding Type - full/first/keywords]
+    Store --> Format3[Embedding BLOB - Binary format<br/>np.float32 for efficiency]
+    
+    Format1 --> Index2[🔍 Index on Doc ID + Type<br/>Lightning fast lookup]
+    Format2 --> Index2
+    
+    Index2 --> Benefits[✅ Database Benefits]
+    
+    Benefits --> B1[⚡ Fast Retrieval<br/>Indexed searches]
+    Benefits --> B2[💪 Multi-Vector Matching<br/>3x better accuracy]
+    Benefits --> B3[💾 Efficient Storage<br/>Binary BLOB format]
+    Benefits --> B4[🔗 Relational Links<br/>Easy to trace sources]
+    
+    B1 --> Output[(🎯 Ready for Search<br/>3 vectors per chunk<br/>Indexed & Optimized)]
+    B2 --> Output
+    B3 --> Output
+    B4 --> Output
+    
+    Output --> Tech[🔧 Technical Specs]
+    Tech --> T1[Model: MiniLM-L3-v2 - 50MB]
+    Tech --> T2[Vector Size: 384 dimensions]
+    Tech --> T3[Format: np.float32 bytes]
+    Tech --> T4[Total Vectors: 3x chunks]
+    
+    style Start fill:#e3f2fd
+    style DB fill:#c8e6c9
+    style Table1 fill:#fff9c4
+    style Table2 fill:#fff9c4
+    style Multi fill:#f8bbd0
+    style Model fill:#b39ddb
+    style Store fill:#ffccbc
+    style Benefits fill:#80deea
+    style Output fill:#a5d6a7
+    style Tech fill:#90a4ae
+    
+    style Vec1 fill:#ffab91
+    style Vec2 fill:#ffab91
+    style Vec3 fill:#ffab91
+    
+    style R1 fill:#81c784
+    style R2 fill:#81c784
+    style R3 fill:#81c784
+    
+    style B1 fill:#64b5f6
+    style B2 fill:#64b5f6
+    style B3 fill:#64b5f6
+    style B4 fill:#64b5f6
