@@ -188,7 +188,7 @@ ollama serve
 python makedatabase.py
 
 # 7. Run server
-python server.py
+python server-3.py
 
 # 8. Open http://localhost:8000
 ```
@@ -224,7 +224,7 @@ This processes all documents and creates searchable embeddings.
 
 **Step 3: Start Server & Ask Questions**
 ```bash
-python server.py
+python server-3.py
 ```
 
 The chatbot can now answer questions about your documents!
