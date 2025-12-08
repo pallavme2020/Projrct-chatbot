@@ -540,120 +540,136 @@ graph TD
 
 ```mermaid
 graph TD
-    Start([💬 User Question]) --> Classify[🎯 Step 1: Query Classification]
+    Start([🎯 Enhanced Queries Package<br/>From Query Preprocessing<br/>7-10 optimized queries]) --> ModeSelect{🎨 Select Retrieval Mode}
     
-    Classify --> Type{Query Type?}
+    ModeSelect --> Fast[⚡ FAST MODE<br/>~4 seconds<br/>3 docs needed]
+    ModeSelect --> Standard[📊 STANDARD MODE<br/>~10 seconds<br/>7 docs needed]
+    ModeSelect --> Thorough[🔬 THOROUGH MODE<br/>~20 seconds<br/>15 docs needed]
     
-    Type --> Casual[😊 CASUAL<br/>Greetings, thanks, etc.]
-    Type --> Memory[🧠 MEMORY<br/>Previous conversation]
-    Type --> Document[📄 DOCUMENT<br/>Needs database search]
+    Fast --> FastVec[Single Vector Search<br/>Main query only<br/>Top 3 results]
+    FastVec --> FastOut[⚡ Fast Output]
     
-    Casual --> FastResponse[⚡ Fast Response<br/>No preprocessing needed]
-    Memory --> SessionHistory[📋 Check Session History<br/>Last 10 messages]
+    Standard --> StdStage1[📍 Stage 1: Parallel Hybrid Retrieval<br/>ThreadPoolExecutor max_workers=2]
     
-    Document --> Mode[🎨 Step 2: Mode Detection]
+    StdStage1 --> StdVec[Thread 1: Vector Search<br/>Main query → Top 20]
+    StdStage1 --> StdBM25[Thread 2: BM25 Search<br/>Main query → Top 20]
     
-    Mode --> M1["detail - 15 docs, 400-600 words"]
-    Mode --> M2["normal - 7 docs, 150-250 words"]
-    Mode --> M3["short - 3 docs, 30-80 words"]
+    StdVec --> StdDB[(🗄️ Database<br/>Multi-Vector Access)]
+    StdBM25 --> StdDB
     
-    M1 --> Intent
-    M2 --> Intent
-    M3 --> Intent[🔍 Step 3: Intent Detection]
+    StdDB --> StdVec1[Query full text embeddings]
+    StdDB --> StdVec2[Query first sentence embeddings]
+    StdDB --> StdVec3[Query keywords embeddings]
     
-    Intent --> I1[explain - Define/describe]
-    Intent --> I2[compare - Differences/vs]
-    Intent --> I3[list - Show me/give me]
-    Intent --> I4[summarize - Overview/brief]
-    Intent --> I5[howto - Steps/process]
-    Intent --> I6[factual - When/where/who]
+    StdVec1 --> StdFusion
+    StdVec2 --> StdFusion
+    StdVec3 --> StdFusion["🔄 Reciprocal Rank Fusion<br/>RRF combines rankings<br/>Score = 1/(k+rank)"]
     
-    I1 --> Enhance
-    I2 --> Enhance
-    I3 --> Enhance
-    I4 --> Enhance
-    I5 --> Enhance
-    I6 --> Enhance[✨ Step 4: Query Enhancement]
+    StdBM25 --> StdFusion
     
-    Enhance --> Sub[📝 Decompose Complex Query]
+    StdFusion --> StdTop[📋 Top 15 Combined Results]
     
-    Sub --> SubEx1["Original: 'What is ML and how does it work?'"]
-    SubEx1 --> SubEx2["Sub-query 1: 'What is ML'"]
-    SubEx1 --> SubEx3["Sub-query 2: 'how does it work'"]
-    SubEx1 --> SubEx4["Sub-query 3: 'machine learning process'"]
+    StdTop --> StdStage2[📍 Stage 2: Cross-Encoder Reranking<br/>ms-marco-MiniLM-L-6-v2]
     
-    SubEx2 --> Var
-    SubEx3 --> Var
-    SubEx4 --> Var[🔄 Generate Search Variations]
+    StdStage2 --> StdRerank[Deep semantic matching<br/>Query-document pairs<br/>Batch processing]
     
-    Var --> V1["Variation 1: Original query"]
-    Var --> V2["Variation 2: 'what is [topic]'"]
-    Var --> V3["Variation 3: 'explain [topic]'"]
-    Var --> V4["Variation 4: Remove question words"]
+    StdRerank --> StdOut[📊 Standard Output<br/>Top 7 reranked]
     
-    V1 --> Syn
-    V2 --> Syn
-    V3 --> Syn
-    V4 --> Syn[📚 Synonym Expansion<br/>Using WordNet]
+    Thorough --> ThorStage1[📍 Stage 1: Parallel Query Enhancement<br/>ThreadPoolExecutor max_workers=3]
     
-    Syn --> SynEx["'ML' → 'machine learning'<br/>'process' → 'method, procedure'<br/>'work' → 'function, operate'"]
+    ThorStage1 --> ThorSub[Thread 1: Sub-queries<br/>Complex decomposition]
+    ThorStage1 --> ThorVar[Thread 2: Search variations<br/>Multiple phrasings]
+    ThorStage1 --> ThorHyp[Thread 3: Hypothetical doc<br/>Expected answer template]
     
-    SynEx --> Hyp[📄 Hypothetical Document<br/>Create expected answer template]
+    ThorSub --> ThorQueries[📦 7 Query Variations<br/>Original + 5 sub + 1 hyp]
+    ThorVar --> ThorQueries
+    ThorHyp --> ThorQueries
     
-    Hyp --> HypEx["Template: '[Topic] is a concept that<br/>refers to [description]. It involves<br/>[aspects] and is used in [context].'"]
+    ThorQueries --> ThorStage2[📍 Stage 2: Parallel Multi-Source Retrieval<br/>ThreadPoolExecutor max_workers=4]
     
-    HypEx --> Entity[🏷️ Extract Entities<br/>Capitalized phrases]
+    ThorStage2 --> ThorLoop[For each of 5 queries:<br/>Launch 2 parallel searches]
     
-    Entity --> EntEx["Example: 'Machine Learning'<br/>'Neural Networks', 'Data Science'"]
+    ThorLoop --> ThorV[Vector Search<br/>Top 10 per query]
+    ThorLoop --> ThorB[BM25 Search<br/>Top 10 per query]
     
-    EntEx --> KeyTerms[🔑 Extract Key Terms<br/>Remove stopwords, 4+ letters]
+    ThorV --> ThorDB[(🗄️ Database<br/>All 3 Vector Types)]
+    ThorB --> ThorDB
     
-    KeyTerms --> KTEx["'machine', 'learning', 'process'<br/>'algorithm', 'training', 'model'"]
+    ThorDB --> ThorCollect[📊 Collect All Results<br/>~100 candidate docs]
     
-    KTEx --> Final[✅ Step 5: Final Query Package]
+    ThorCollect --> ThorDedup[🔍 Deduplication<br/>Remove exact duplicates<br/>Keep unique ~50 docs]
     
-    Final --> Output1[Original Query]
-    Final --> Output2[5-7 Sub-queries]
-    Final --> Output3[5 Search Variations]
-    Final --> Output4[Synonym-expanded terms]
-    Final --> Output5[Hypothetical document]
-    Final --> Output6[Key entities & terms]
+    ThorDedup --> ThorStage3[📍 Stage 3: Multi-Vector Scoring<br/>Late Interaction]
     
-    Output1 --> Ready
-    Output2 --> Ready
-    Output3 --> Ready
-    Output4 --> Ready
-    Output5 --> Ready
-    Output6 --> Ready[(🎯 Ready for Retrieval<br/>7-10 enhanced queries<br/>Maximum coverage)]
+    ThorStage3 --> ThorSentence[Split each doc into sentences<br/>Batch encode ALL sentences<br/>paraphrase-MiniLM-L3-v2]
     
-    Ready --> Tech[🔧 Technical Tools Used]
-    Tech --> T1[NLTK - Stopwords & WordNet]
-    Tech --> T2[Regex - Pattern matching]
-    Tech --> T3[Question Patterns - Template matching]
-    Tech --> T4[Collections Counter - Frequency analysis]
+    ThorSentence --> ThorMax[For each doc:<br/>Max similarity across sentences<br/>Query vs each sentence]
+    
+    ThorMax --> ThorTop30[📋 Top 30 by multi-vec score]
+    
+    ThorTop30 --> ThorStage4[📍 Stage 4: Cross-Encoder Reranking<br/>Deep semantic validation]
+    
+    ThorStage4 --> ThorCross[Query-doc pairs<br/>Batch prediction<br/>ms-marco-MiniLM]
+    
+    ThorCross --> ThorTop20[📋 Top 20 reranked]
+    
+    ThorTop20 --> ThorStage5[📍 Stage 5: Diversity Filter<br/>Remove near-duplicates]
+    
+    ThorStage5 --> ThorDiversity[Cosine similarity threshold<br/>0.85 cutoff<br/>Keep diverse docs]
+    
+    ThorDiversity --> ThorOut[🔬 Thorough Output<br/>Top 15 diverse + accurate]
+    
+    FastOut --> Final[✅ Final Ranked Documents]
+    StdOut --> Final
+    ThorOut --> Final
+    
+    Final --> Meta[📊 Metadata Attached]
+    
+    Meta --> M1[Source file name]
+    Meta --> M2[Relevance score]
+    Meta --> M3[Chunk text preview]
+    Meta --> M4[Rerank score if used]
+    Meta --> M5[Multi-vec score if used]
+    
+    M1 --> Generation
+    M2 --> Generation
+    M3 --> Generation
+    M4 --> Generation
+    M5 --> Generation[(🎯 Ready for Answer Generation<br/>Ranked, scored, diverse documents<br/>With full metadata)]
+    
+    Generation --> Tech[🔧 Technical Components]
+    
+    Tech --> T1[Embedder: paraphrase-MiniLM-L3-v2<br/>384 dims, 50MB]
+    Tech --> T2[Reranker: ms-marco-MiniLM-L-6-v2<br/>Cross-encoder, 90MB]
+    Tech --> T3[BM25: BM25Plus algorithm<br/>Keyword matching]
+    Tech --> T4[Threading: ThreadPoolExecutor<br/>Parallel execution]
+    Tech --> T5[Database: SQLite with thread lock<br/>Thread-safe operations]
+    Tech --> T6[RRF: Reciprocal Rank Fusion<br/>k=60 parameter]
     
     style Start fill:#e3f2fd
-    style Classify fill:#fff9c4
-    style Casual fill:#c8e6c9
-    style Memory fill:#c8e6c9
-    style Document fill:#c8e6c9
-    style Mode fill:#f8bbd0
-    style Intent fill:#ffccbc
-    style Enhance fill:#b39ddb
-    style Sub fill:#ce93d8
-    style Var fill:#ba68c8
-    style Syn fill:#ab47bc
-    style Hyp fill:#9c27b0
-    style Entity fill:#8e24aa
-    style KeyTerms fill:#7b1fa2
-    style Final fill:#80deea
-    style Ready fill:#a5d6a7
+    style ModeSelect fill:#fff9c4
+    style Fast fill:#c8e6c9
+    style Standard fill:#ffe0b2
+    style Thorough fill:#f8bbd0
+    
+    style StdStage1 fill:#ce93d8
+    style StdStage2 fill:#ba68c8
+    style StdFusion fill:#ab47bc
+    
+    style ThorStage1 fill:#90caf9
+    style ThorStage2 fill:#64b5f6
+    style ThorStage3 fill:#42a5f5
+    style ThorStage4 fill:#2196f3
+    style ThorStage5 fill:#1e88e5
+    
+    style Final fill:#a5d6a7
+    style Generation fill:#81c784
     style Tech fill:#90a4ae
     
-    style I1 fill:#ffab91
-    style I2 fill:#ffab91
-    style I3 fill:#ffab91
-    style I4 fill:#ffab91
-    style I5 fill:#ffab91
-    style I6 fill:#ffab91
+    style FastOut fill:#c8e6c9
+    style StdOut fill:#ffe0b2
+    style ThorOut fill:#f8bbd0
+    
+    style StdDB fill:#fff9c4
+    style ThorDB fill:#fff9c4
 ```
