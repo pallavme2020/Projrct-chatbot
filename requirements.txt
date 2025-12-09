@@ -16,6 +16,7 @@ markdown  # Markdown files
 beautifulsoup4  # HTML parsing
 lxml # XML/HTML parsing
 rich
+textual
 
 sentence-transformers
 huggingface_hub
