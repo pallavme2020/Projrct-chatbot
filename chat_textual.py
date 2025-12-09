@@ -1,5 +1,5 @@
 """
-Main Entry Point for Textual TUI Interface
+Main Entry Point for Textual TUI Interface-
 """
 
 from chat_v2_cleaneroutput import EnhancedChatSystem
