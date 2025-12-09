@@ -15,6 +15,7 @@ openpyxl # Excel files
 markdown  # Markdown files
 beautifulsoup4  # HTML parsing
 lxml # XML/HTML parsing
+rich
 
 sentence-transformers
 huggingface_hub
