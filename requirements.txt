@@ -1,30 +1,30 @@
 # Core Dependencies
-sentence-transformers==2.2.2
-numpy==1.24.3
-nltk==3.8.1
-rank-bm25==0.2.2
+sentence-transformers
+numpy
+nltk
+rank-bm25
 
 # LangChain for Document Loading
-langchain==0.1.0
-langchain-community==0.0.13
-unstructured==0.11.8
+langchain
+langchain-community
+unstructured
 python-magic
-pypdf==3.17.4  # PDF support
-python-docx==1.1.0  # Word docs
-openpyxl==3.1.2  # Excel files
-markdown==3.5.1  # Markdown files
-beautifulsoup4==4.12.2  # HTML parsing
-lxml==4.9.3  # XML/HTML parsing
+pypdf # PDF support
+python-docx  # Word docs
+openpyxl # Excel files
+markdown  # Markdown files
+beautifulsoup4  # HTML parsing
+lxml # XML/HTML parsing
 
-sentence-transformers==2.2.2
-huggingface_hub==0.19.4
+sentence-transformers
+huggingface_hub
 
 # Database
-sqlite-vec>=0.1.0
+sqlite-vec
 
 # LLM Integration
-ollama==0.1.6
+ollama
 
 # Optional but useful
-tqdm==4.66.1  # Progress bars
-colorama==0.4.6  # Colored output
+tqdm  # Progress bars
+colorama  # Colored output
