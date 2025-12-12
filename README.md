@@ -1,4 +1,4 @@
-# Autoliv AI Knowledge Assistant
+#  AI Knowledge Assistant
 
 A Retrieval-Augmented Generation (RAG) chatbot system that intelligently retrieves and processes information from documents to provide accurate, context-aware responses.
 
