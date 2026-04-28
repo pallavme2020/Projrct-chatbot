@@ -4,7 +4,7 @@ A Retrieval-Augmented Generation (RAG) chatbot system that intelligently retriev
 
 ## Purpose
 
-The Autoliv AI Knowledge Assistant is a lightweight RAG chatbot that:
+The AI Knowledge Assistant is a lightweight RAG chatbot that:
 - Uploads and indexes multiple document formats (PDF, Word, Excel, Markdown, HTML, CSV, JSON)
 - Answers questions using intelligent document retrieval and AI
 - Works on **low-resource systems** (4GB RAM, CPU-only, NO GPU required)
